@@ -223,7 +223,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * @return int
    */
   public function getParentId() {
-    $this->record->getParentId();
+    return $this->record->getParentId();
   }
   
   /**
@@ -280,11 +280,52 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }  
   
   /**
-   * @deprecated
+   * Gets next sibling for trees with horizontal orientation
+   * @return Doctrine_Node
    */
-  public function getNextSibling() {
-    $this->unsupportedMethod();
-  }  
+  public function getNextSibling() {    
+    return $this->getNextSiblingsQuery()->fetchOne();    
+  }
+  
+  /**
+   * Prepares query for node's next siblings fetching
+   * @return Doctrine_Query
+   */
+  public function getNextSiblingsQuery() {
+    if (($field = $this->_tree->getAttribute('sortBy')) === null) {
+      $this->unsupportedMethod();
+    }
+    $rel = $this->_tree->getAttribute('sortOrder') == 'ASC' ? '>' : '<';
+    return $this->getSiblingsQuery()
+      ->andWhere("$field $rel ?", array($this->record->get($field)));
+  }
+  
+  /**
+   * Prepares query for node's previous siblings fetching
+   * @return type 
+   */
+  public function getPrevSiblingsQuery() {
+    if (($field = $this->_tree->getAttribute('sortBy')) === null) {
+      $this->unsupportedMethod();
+    }
+    $rel = $this->_tree->getAttribute('sortOrder') == 'ASC' ? '<' : '>';
+    return $this->getSiblingsQuery()
+      ->andWhere("$field $rel ?", array($this->record->get($field)));
+  }
+  
+  /**
+   * Prepares query for node's siblings fetching
+   * @return type 
+   */
+  public function getSiblingsQuery() {
+    if (!$this->isValidNode()) {
+      throw new Doctrine_Node_Exception('Can not run method on unexisting node.');
+    }
+    return $this->_tree->getQuery()
+      ->andWhere("parent_id=?", array(
+        $this->getParentId(),        
+      ));
+  }
   
   /**
    * Gets the number of node's children
@@ -344,10 +385,14 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   * @deprecated
+   * Gets the node's previous sibling
+   * @return Doctrine_Node
    */
   public function getPrevSibling() {
-    $this->unsupportedMethod();
+    if (($field = $this->_tree->getAttribute('sortBy')) === null) {
+      $this->unsupportedMethod();
+    }
+    return $this->getPrevSiblingsQuery()->fetchOne();
   }
   
   /**
@@ -359,16 +404,16 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   * @todo Переписать под raw sql с использованием REGEXP (в один запрос)
+   * Gets node's siblings
    * @param type $includeNode
    * @return Doctrine_Collection
    */
   public function getSiblings($includeNode = false) {
-    return $this->getParent()->getChildren();
+    return $this->getSiblingsQuery()->execute();
   }
   
   /**
-   *
+   * Checks if the node has children
    * @return bool
    */
   public function hasChildren() {
@@ -376,10 +421,14 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   * @deprecated
+   * Checks if the node has next sibling in horizontal sorted tree.
+   * @return bool
    */
   public function hasNextSibling() {
-    $this->unsupportedMethod();
+    if (($field = $this->_tree->getAttribute('sortBy')) === null) {
+      $this->unsupportedMethod();
+    }
+    return $this->getNextSiblingsQuery()->count() > 0;
   }
   
   /**
@@ -391,12 +440,20 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }  
   
   /**
-   * @deprecated
+   * Checks if the node has previous sibling in horizontal sorted tree.
+   * @return bool
    */
   public function hasPrevSibling() {
-    $this->hasNextSibling();
+    if (($field = $this->_tree->getAttribute('sortBy')) === null) {
+      $this->unsupportedMethod();
+    }
+    return $this->getPrevSiblingsQuery()->count();
   }
   
+  /**
+   * Inserts node as first child of $dest
+   * @param Doctrine_Record $dest 
+   */
   public function insertAsFirstChildOf(Doctrine_Record $dest)
   {
     if ($this->isValidNode()) {

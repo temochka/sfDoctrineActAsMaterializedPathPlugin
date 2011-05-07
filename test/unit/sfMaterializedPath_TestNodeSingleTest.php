@@ -29,6 +29,13 @@ $child = $children->getFirst();
 $t->is($child->getParentId(), $root->getPrimaryKey(), 'Parent id of the children must be equal to root node\'s id');
 $t->ok($child->getNode()->isValidNode(), 'Valid node is a node having level equal to path\'s length.');
 
+$t->ok($child->getNode()->hasNextSibling(), '$child node shoud has next sibling.');
+$nextSibling = $child->getNode()->getNextSibling();
+$t->ok($nextSibling && $nextSibling->exists(), 'Next sibling of first children exists.');
+$t->is($nextSibling->getName(), '0_2', 'Next sibling should has name "0_2"');
+$t->ok($nextSibling->getNode()->hasPrevSibling(), 'Node should have previous sibling.');
+$t->is($nextSibling->getNode()->getPrevSibling(), $child, 'Next node\'s previous sibling is the node');
+
 $branch = $table->getTree()->fetchBranch($child->getPrimaryKey());
 $t->is($branch->count(), 4, 'There are three children of the first root\'s child in the fixtures');
 
