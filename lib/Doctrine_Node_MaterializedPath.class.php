@@ -75,13 +75,6 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     $old_path = $this->getPath();
     $full_old_path = $this->getPath($this->getPathSeparator(), true);
     
-    /*if ($this->record->getName() == 'new_root') {
-      var_dump($new_path);
-      var_dump($old_path);
-      var_dump($full_old_path);
-      die('here');
-    }*/
-    
     if (!$this->record->isNew() && $this->hasChildren()) {      
       /* @var $q Doctrine_Query */
       $q = $this->record->getTable()->createQuery()->update()
