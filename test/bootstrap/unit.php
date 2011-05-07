@@ -14,6 +14,7 @@ $_data_dir = realpath(__DIR__.'/../../data');
 
 // configuration
 require_once $_project_dir.'/config/ProjectConfiguration.class.php';
+require_once __DIR__.'/fakeAppConfiguration.class.php';
 $configuration = ProjectConfiguration::hasActive() ? ProjectConfiguration::getActive() : new ProjectConfiguration($_project_dir);
 
 // autoloader
@@ -26,3 +27,5 @@ $autoload->register();
 
 // lime initialization
 include $configuration->getSymfonyLibDir().'/vendor/lime/lime.php';
+
+$context = sfContext::createInstance(new fakeAppConfiguration('test', true), 'fake');
