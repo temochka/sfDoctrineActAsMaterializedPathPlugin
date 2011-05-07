@@ -1,6 +1,8 @@
 sfMaterializedPath_TestNodeSingle:
   actAs:
-    MaterializedPath: ~
+    MaterializedPath:
+      sortBy: name
+      sortOrder: ASC
   columns:
     name: { type: string(63), notnull: true }
     
@@ -9,7 +11,5 @@ sfMaterializedPath_TestNodeMultiple:
     MaterializedPath:
       hasManyRoots: true
       pathSeparator: '@'
-      sortBy: name
-      sortOrder: DESC
   columns:
     name: { type: string(63), notnull: true }
