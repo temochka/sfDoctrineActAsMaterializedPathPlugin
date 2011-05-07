@@ -6,12 +6,13 @@
  */
 require __DIR__.'/../bootstrap/unit.php';
 
-new sfDatabaseManager($configuration);
+$manager = new sfDatabaseManager($configuration);
 
 sfMaterializedPath_TestNodeMultipleTable::getInstance()->createQuery()->delete();
 Doctrine_Core::loadData($_data_dir.'/test_fixtures');
 
 $table = sfMaterializedPath_TestNodeMultipleTable::getInstance();
+
 $t = new lime_test();
 
 /* @var $root_1 sfMaterializedPath_TestNodeMultiple */

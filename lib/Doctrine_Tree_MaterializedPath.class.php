@@ -52,6 +52,17 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
         $options['rootColumnName'] : 'root_id';
     }
     
+    if (
+      isset($options['sortOrder']) && 
+      !in_array($options['sortOrder'], array('ASC', 'DESC'))
+    )
+    {
+      throw new InvalidArgumentException('Sort order should has ASC or DESC value.');
+    }
+    
+    $options['sortOrder'] = 
+      isset($options['sortOrder']) ? $options['sortOrder'] : 'ASC';
+    
     $options['pathSeparator'] = 
       isset($options['pathSeparator']) ? 
         $options['pathSeparator'] : self::PATH_SEPARATOR;
@@ -68,6 +79,17 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
     }
 
     parent::__construct($table, $options);
+    
+    if (
+      isset($options['sortBy']) && null !== $options['sortBy'] &&
+      !$this->table->hasColumn($options['sortBy'])
+    )
+    {
+      throw new InvalidArgumentException(sprintf(
+        'Column "%s" does not exist in table.',
+        (string)$options['sortBy']
+      ));
+    }
   }  
   
   /**
@@ -217,11 +239,7 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
    */
   public function getQuery()
   {
-    $q = $this->table->createQuery('_node');
-    if ($this->hasManyRoots())
-      $q->orderBy(sprintf('%s, path', $this->getAttribute('rootColumnName')));
-    else
-      $q->orderBy('path');
+    $q = $this->table->createQuery('_node')->orderBy($this->getOrderBy());
     return $q;
   }
   
@@ -241,5 +259,23 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
   public function getPathSeparator()
   {
     return $this->getAttribute('pathSeparator');
+  }
+  
+  /**
+   * Returns formed ORDER BY part for building queries
+   * @access private
+   * @return string
+   */
+  private function getOrderBy()
+  {
+    $order_by = array();
+    if ($this->hasManyRoots()) {
+      $order_by[] = $this->getAttribute('rootColumnName');
+    }
+    $order_by[] = 'path';
+    if ($field_name = $this->getAttribute('sortBy')) {
+      $order_by[] = $field_name.' '.$this->getAttribute('sortOrder');
+    }
+    return implode(',', $order_by);
   }
 }
