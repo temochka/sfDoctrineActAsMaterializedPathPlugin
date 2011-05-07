@@ -1,0 +1,42 @@
+# sfDoctrineMaterializedPathPlugin #
+
+## Introduction ##
+This behavior allows you to store Materialized Path's trees in your database
+
+## Features ##
+ * fully implemented Doctrine_Node_Interface interface
+ * handling multiple trees in one table
+ * automatic updation of node paths on changes
+ * "dead nodes" protection with native database constraints
+ * unit-tests for model
+
+## Philosophy ##
+
+ * Classical Materialized Path extended by level and parent_id fields to improve perfomance
+ * Only DQL is allowed. No raw SQL. (It causes some overhead save method calls)
+ * Only new nodes can be inserted in the tree
+ * Only existing tree nodes can be moved in tree
+
+## Get it installed ##
+
+ * go to your project's root
+ * Install the plugin (not works): 
+        
+  ./symfony plugin-install http://svn.symfony-project.com/plugins/sfDoctrineMaterializedPath/trunk
+ 
+ * edit config/doctrine/schema.yml and add the Materialized path behavior to the model you want to be taggable.
+ 
+        Post:
+          actAs:  { Timestampable: ~ , MaterializedPath: ~ }
+ 
+ * rebuild the model: 
+ 
+        ./symfony doctrine:build --all
+ 
+ * clear cache:
+ 
+        ./symfony cc
+
+## Usage ##
+
+Use it like other Doctrine trees.

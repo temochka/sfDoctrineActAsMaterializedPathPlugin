@@ -1,0 +1,78 @@
+sfMaterializedPath_TestNodeMultiple:
+  Tree_0:
+    name: "Tree 0"
+    root_id: 1
+    
+  Node_0:
+    name: "0"
+    Parent: Tree_0
+    root_id: 1
+    
+  Node_1:
+    name: "0_1"
+    Parent: Node_0
+    root_id: 1
+  
+  Node_2:
+    name: "0_2"
+    Parent: Node_0
+    root_id: 1
+    
+  Node_3:
+    name: "0_1_3"
+    Parent: Node_1
+    root_id: 1
+    
+  Node_4:
+    name: "0_2_4"
+    Parent: Node_3
+    root_id: 1
+    
+  Node_5:
+    name: "0_2_4_5"
+    Parent: Node_3
+    root_id: 1
+    
+  Tree_1:
+    name: "Tree 1"
+    root_id: 2
+    
+  Node_6:
+    name: "0"
+    Parent: Tree_1
+    root_id: 2
+    
+  Node_7:
+    name: "0_1"
+    Parent: Node_6
+    root_id: 2
+  
+  Node_8:
+    name: "0_2"
+    Parent: Node_6
+    root_id: 2    
+  
+
+sfMaterializedPath_TestNodeSingle:
+  Node_0:
+    name: "0"
+    
+  Node_1:
+    name: "0_1"
+    Parent: Node_0
+  
+  Node_2:
+    name: "0_2"
+    Parent: Node_0
+    
+  Node_3:
+    name: "0_1_3"
+    Parent: Node_1
+    
+  Node_4:
+    name: "0_2_4"
+    Parent: Node_3
+    
+  Node_5:
+    name: "0_2_4_5"
+    Parent: Node_3

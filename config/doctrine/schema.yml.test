@@ -1,0 +1,13 @@
+sfMaterializedPath_TestNodeSingle:
+  actAs:
+    MaterializedPath: ~
+  columns:
+    name: { type: string(63), notnull: true }
+    
+sfMaterializedPath_TestNodeMultiple:
+  actAs:
+    MaterializedPath:
+      hasManyRoots: true
+      pathSeparator: '@'
+  columns:
+    name: { type: string(63), notnull: true }
