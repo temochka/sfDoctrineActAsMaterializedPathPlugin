@@ -1,50 +1,57 @@
 <?php
 
+/**
+ * BasesfMaterializedPathTreeManagerComponents 
+ * @author Artem Chistyakov <chistyakov.artem@gmail.com>
+ * @property bool $hasManyRoots
+ * @property string $model
+ */
 class BasesfMaterializedPathTreeManagerComponents extends sfComponents
 {
-  public function executeManager(){
-		
-		if ($this->records = $this->executeControl())
-    {
-      $this->hasManyRoots = $this->modelHasManyRoots();
-			$request = $this->getRequest();			
-  		$this->records = $this->getTree($this->model, $request->getParameter('root'));
-		}
-	}
-
-	/*
-	 * return exception if Model is not defined as Tree
-	*/
-	private function executeControl() {
-		if ( ! Doctrine_Core::getTable($this->model)->isTree() )
-    {
-			throw new Exception('Model "'.$this->model.'" is not a tree');
-			return false;
+  /**
+   * Manager component
+   */
+  public function executeManager() {    
+    if (!($table = Doctrine_Core::getTable($this->model)) || !$table->isTree()) {
+			throw new InvalidArgumentException(
+        'Model "'.$this->model.'" does not exist or isn\'t a tree'
+      );
 		}
     
-		return true;		
+    if ($this->hasManyRoots = $this->modelHasManyRoots()) {
+      $this->roots = $this->getRoots();
+    }
+    
+    $request = $this->getRequest();    
 	}
 	
-	
 	/*
-	* Returns the roots
-	*/
-	private function getRoots($model){
-    $tree = Doctrine_Core::getTable($model)->getTree();
+	 * Returns the roots
+   * @return Doctrine_Collection
+	 */
+	private function getRoots()
+  {
+    $tree = Doctrine_Core::getTable($this->model)->getTree();
     return $tree->fetchRoots();
   }
 	
-  private function getTree($model, $rootId = null){
-    $tree = Doctrine_Core::getTable($model)->getTree();
-    $options = array();
-    if($rootId !== null)
-    {
-      $options['root_id'] = $rootId;
-    }
+  /**
+   * Fetches the tree
+   * @param int $root_id
+   * @return Doctrine_Collection
+   */
+  private function getTree($root_id = null)
+  {
+    $tree = Doctrine_Core::getTable($model)->getTree();    
+    $options = null !== $rootId ? array('root_id' => $root_id) : array();
     return $tree->fetchTree($options);
   }
 	
+  /**
+   * Checks if model has many roots
+   * @return bool
+   */
 	private function modelHasManyRoots(){
-    return false;
+    return Doctrine_Core::getTable($this->model)->getTree()->hasManyRoots();
 	}
 }

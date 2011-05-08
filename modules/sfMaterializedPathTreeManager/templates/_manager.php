@@ -3,7 +3,13 @@
 <div id="sf_admin_container">
   <h1><?php echo sfInflector::humanize(sfInflector::underscore($model)); ?> <?php echo __('Tree manager'); ?></h1>
   <?php include_partial('sfMaterializedPathTreeManager/flashes') ?>
-  <?php include_partial('sfMaterializedPathTreeManager/manager_tree', array('model' => $model, 'field' => $field, 'root' => $root, 'records' => $records, 'hasManyRoots' => $hasManyRoots)) ?>
+  <?php 
+  if ($hasManyRoots && null !== $root_id) {
+    include_partial('sfJqueryTreeDoctrineManager/manager_roots', array('model' => $model, 'field' => $field, 'root' => $root, 'roots' => $roots));
+  } else {
+    include_partial('sfMaterializedPathTreeManager/manager_tree', array('model' => $model, 'field' => $field, 'root' => $root, 'records' => $records, 'hasManyRoots' => $hasManyRoots));
+  } 
+  ?>
 </div>
 
 
