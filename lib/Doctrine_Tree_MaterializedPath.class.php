@@ -201,6 +201,16 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
   }
   
   /**
+   * Fetches all roots in table
+   * @return Doctrine_Collection
+   */
+  public function fetchRoots() {
+    return $this->table
+      ->createQuery()->where('level=0')
+      ->orderBy($this->getOrderBy())->execute();
+  }
+  
+  /**
    * Fetches the tree with given root_id,
    * @param type $options
    * @param type $hydrationMode
