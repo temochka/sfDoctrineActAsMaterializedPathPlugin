@@ -54,7 +54,6 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
   public function preSave(Doctrine_Event $event) {
     /* @var $object sfDoctrineRecord */
     $object = $event->getInvoker();
-    $object->getNode()->hasValidRootValue();
     $object->getNode()->fixLevel();
   }
 

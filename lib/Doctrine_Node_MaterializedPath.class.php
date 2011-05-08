@@ -47,8 +47,9 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
       $this->getRootValue() != $record->getNode()->getRootValue() ? 
         $record->getNode()->getRootValue() : null;
     
-    $record->getNode()->setRootValue($this->getRootValue());
+    $record->getNode()->setRootValue($this->getRootValue());    
     $record->setParent($this->record);
+
     $conn = $this->record->getTable()->getConnection();
     $conn->beginTransaction();
     try {
@@ -69,11 +70,18 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
 
   /**
    * Method updates node's self path and children's pathes
+   * Warning! Method doesn't use transaction.
    * @param string $new_path 
+   * @param int $old_root_id
+   * @param bool $and_save
    */
-  public function setPath($new_path, $old_root_id = null) {
+  public function setPath($new_path, $old_root_id = null, $and_save = false) {
     $old_path = $this->getPath();
     $full_old_path = $this->getPath($this->getPathSeparator(), true);
+    $d_level = (
+      count(explode($this->getPathSeparator(), $new_path)) -
+      count(explode($this->getPathSeparator(), $full_old_path))
+    );
     
     if (!$this->record->isNew() && $this->hasChildren()) {      
       /* @var $q Doctrine_Query */
@@ -86,12 +94,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
             strlen($full_old_path)
           )
         )
-        ->set('level', '? + level',
-          (
-            count(explode($this->getPathSeparator(), $new_path)) -
-            count(explode($this->getPathSeparator(), $full_old_path))
-          )
-        )        
+        ->set('level', '? + level', $d_level)
         ->where(
           'path LIKE ?', 
           array($full_old_path.$this->getPathSeparator().'%')
@@ -110,6 +113,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
       $q->execute();
     }
     $this->record->setPath($new_path);
+    if ($and_save) $this->record->save();
   }
   
   /**
@@ -154,7 +158,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
         );
       else
         $this->record->setPath($this->record->getPrimaryKey());
-    } else {      
+    } else {
       $path = $this->record->getNode()->getPathArray(true);      
       if (array_pop($path) != $this->record->getPrimaryKey()) {
         $this->record->setPath(
@@ -184,14 +188,15 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function fixLevel()
   {
-    if (null === $this->getLevel()) {
-      if (null === $this->record->getParentId())
+    if (null === $this->getLevel()) {            
+      if (null === $this->getParentId()) {        
         $this->record->setLevel(0);
-      else 
-        $this->record->setLevel($this->record->getParent()->getLevel());
+      } else {
+        $this->record->setLevel($this->getParent()->getLevel() + 1);
+      }
     } else {
       if (($c = count($this->getPathArray())) != $this->getLevel()) {
-        $this->record->setLevel($c);
+        $this->setLevel(null);
       } else return false;
     }
     return true;
@@ -234,16 +239,17 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   public function isValidNode()
   {
     return 
-      $this->record->exists() &&
+      $this->record->exists() && 
       null !== $this->record->getPath() &&
-      $this->getLevel() == count($this->getPathArray());
+      $this->getLevel() == count($this->getPathArray()) &&
+      $this->hasValidRootValue();
   }
   
   /**
    * Gets node's children
    * @return Doctrine_Collection
    */
-  public function getChildren() {
+  public function getChildren() {    
     return $this->record->getChildren();
   }
   
@@ -332,7 +338,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * @return int
    */
   public function getNumberChildren() {
-    return $this->record->getChildren()->count();
+    return $this->getChildren()->count();
   }
   
   /**
@@ -477,6 +483,9 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function insertAsNextSiblingOf(Doctrine_Record $dest)
   {
+    if ($this->isValidNode()) {
+      throw new Doctrine_Node_Exception('Can not insert existing nodes.');
+    }
     if (!$dest->getNode()->getLevel()) {
       $this->makeRoot();
     }
@@ -588,6 +597,9 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * @param Doctrine_Record $dest 
    */
   public function moveAsNextSiblingOf(Doctrine_Record $dest) {
+    if (!$this->isValidNode()) {
+      throw new Doctrine_Node_Exception('Can not move unexisting nodes.');
+    }
     $this->insertAsNextSiblingOf($dest);
   }
   
@@ -630,12 +642,14 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     }
   }
   
+  /**
+   * Checks if the node has valid root value
+   * @return bool
+   */
   public function hasValidRootValue()
   {
     if ($this->_tree->hasManyRoots() && null === $this->getRootValue()) {
-      throw new Doctrine_Node_Exception(
-        'Node should has a valid root_id when inserting in tree with multiple roots.'
-      );
+      return false;
     }
     return true;
   }
