@@ -20,7 +20,7 @@
 					<td class="sf_admin_text sf_admin_list_td_<?php echo $field ?>"><?php echo $root->$field ?></td>
 					<td>
 						<ul class="sf_admin_td_actions">
-							<li class="sf_admin_action_edit"><?php echo link_to( __('Manage Tree') ,$sf_request->getParameter('module') . '/' . $sf_request->getParameter('action') . '?root=' . $root->id);?></li>
+							<li class="sf_admin_action_edit"><?php echo link_to( __('Manage Tree') ,$sf_request->getParameter('module') . '/' . $sf_request->getParameter('action') . '?root_id=' . $root->id);?></li>
 						</ul>
 					</td>
 				</tr>
@@ -31,5 +31,5 @@
 </div>
 <div class="sf_admin_actions">
   <?php include_partial('sfMaterializedPathTreeManager/list_batch_actions') ?>
- 	<?php include_partial('sfMaterializedPathTreeManager/list_actions_no_root', array('model' => $model, 'field' => $field, 'root' => $root)) ?>
+ 	<?php include_partial('sfMaterializedPathTreeManager/list_actions_no_root', array('model' => $model, 'field' => $field)) ?>
 </div>

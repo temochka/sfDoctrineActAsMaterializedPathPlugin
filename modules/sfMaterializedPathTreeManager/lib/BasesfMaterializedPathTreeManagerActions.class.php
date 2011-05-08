@@ -77,21 +77,18 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
     return $this->echoJSON($this->json);
   }
   
-  public function executeAdd_root()
+  public function executeAdd_root(sfWebRequest $request)
   {
     $model = $this->getRequestParameter('model');
-    $data = $this->getRequestParameter( strtolower($model) );
+    $data = $this->getRequestParameter(strtolower($model));
     $tree = $this->getTree($model);
     
     $root = new $model;
-    $root->synchronizeWithArray( $data );
+    $root->synchronizeWithArray($data);
 		$root->save();
     
-    Doctrine_Core::getTable($model)->getTree()->createRoot($root);
-    $this->records = $this->getTree($model);
-
-    return $this->echoJSON(json_encode($record->toArray()));
-    
+    $root->getNode()->makeRoot();    
+    $this->redirect($request->getReferer());
   }
 
   public function executeEdit_field()
