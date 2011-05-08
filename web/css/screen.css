@@ -1,0 +1,14 @@
+#sf_admin_container .nested_set_manager_holder ul li a { padding: 0; background : none;}
+
+#sf_admin_container .waiting
+{
+  margin: 4px 0;
+  padding: 4px 4px 4px 30px;
+  background: url(../images/waiting.gif) no-repeat 10px 4px;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  background-color: #ffc;
+}
+
+
+#jstree-contextmenu .edit  ins {background-position : 0 0;}
