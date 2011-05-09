@@ -1,24 +1,180 @@
 <?php
-
+/**
+ * BasesfMaterializedPathTreeManagerActions
+ * Actions of sfMaterializedPathTreeManager
+ * 
+ * @author Artem Chistyakov <chistyakov.artem@gmail.com>
+ */
 class BasesfMaterializedPathTreeManagerActions extends sfActions
 {
-  public function getTree($model, $rootId = null)
+  /**
+   * Gets node's children
+   * @return int
+   */
+  public function executeGet_children(sfWebRequest $request)
   {
-    $tree = Doctrine_Core::getTable($model)->getTree();
+    $this->forward404Unless($request->isXmlHttpRequest());
+    $parent_id = $request->getParameter('parent_id');
+    $model = $request->getParameter('model');
+        
+    if ($parent_id != 0) {
+      $nodes = Doctrine_Core::getTable($model)->getTree()
+        ->fetchChildrenOf($parent_id);
+    } else {
+      /* @var $record Doctrine_Record */
+      $record = Doctrine_Core::getTable($model)->getTree()->fetchRoot();
+      $nodes = array($record);
+    }
+    $answer = array();
+    foreach ($nodes as $node) {
+      $answer[] = $this->decorateNode($node);
+    }
+    return $this->echoJSON($answer);
+  }
+  
+  /**
+   * Adds a new child
+   * @return type 
+   */
+  public function executeAdd_child(sfWebRequest $request)
+  {
+    $this->forward404Unless($request->isXmlHttpRequest());
+    $parent_id = $request->getParameter('parent_id');
+    $model = $request->getParameter('model');
+    
+    try {
+      $record = Doctrine_Core::getTable($model)->find($parent_id);
+      $child = new $model;
+      $child->set(
+        $request->getParameter('field'),
+        $request->getParameter('value')
+      );
+      $child->getNode()->insertAsLastChildOf($record);
 
-    $options = array();
-    if($rootId !== null)
-    {
-      $options['root_id'] = $rootId;
+      $answer = $this->createJsTreeAnswer(
+        true, 
+        array('id' => $child->getPrimaryKey())
+      );
+    } catch (Exception $e) {
+      $this->createJsTreeAnswer(false);
+    }
+    
+    return $this->echoJSON($answer);
+  }
+  
+  /**
+   * Adds a new root to tree
+   * @param sfWebRequest $request 
+   */
+  public function executeAdd_root(sfWebRequest $request)
+  {
+    $model = $request->getParameter('model');
+    $data = $request->getParameter(strtolower($model));
+    $tree = $this->getTree($model);
+    
+    $root = new $model;
+    $root->synchronizeWithArray($data);
+		$root->save();
+    
+    $root->getNode()->makeRoot();
+    $this->redirect($request->getReferer());
+  }
+
+  /**
+   * Edits the node's name field
+   * @return int
+   */
+  public function executeEdit_field(sfWebRequest $request)
+  {
+    $this->forward404Unless($request->isXmlHttpRequest());
+    $id = $request->getParameter('id');
+    $model = $request->getParameter('model');
+    $field = $request->getParameter('field');
+    $value = $request->getParameter('value');
+
+    try {
+      $record = Doctrine_Core::getTable($model)->find($id);
+      $record->set($field, $value);
+      $record->save();
+      $answer = $this->createJsTreeAnswer(true);
+    } catch (Exception $e) {
+      $answer = $this->createJsTreeAnswer(false);
     }
 
+    return $this->echoJSON($answer);
+  }
+
+  /**
+   * Deletes the node and its descendants
+   * @return int
+   */
+  public function executeDelete(sfWebRequest $request)
+  {
+    $this->forward404Unless($request->isXmlHttpRequest());
+    $id = $request->getParameter('id');
+    $model = $request->getParameter('model');
+    
+    try {
+      $record = Doctrine_Core::getTable($model)->find($id);      
+      if ($record) $record->delete(); else throw new Exception;
+      $answer = $this->createJsTreeAnswer(true);
+    } catch (Exception $e) {
+      $answer = $this->createJsTreeAnswer(false);
+    }
+    
+    return $this->echoJSON($answer);
+  }
+
+  /**
+   * Moves the node with given id as target_id's child
+   * @param sfWebRequest $request
+   * @return int
+   */
+  public function executeMove(sfWebRequest $request)
+  {
+    $this->forward404Unless($request->isXmlHttpRequest());
+    $id = $request->getParameter('id');
+    $target_id = $request->getParameter('target_id');
+    $model = $request->getParameter('model');
+    
+    try {
+      $record = Doctrine_Core::getTable($model)->find($id);
+      $dest = Doctrine_Core::getTable($model)->find($target_id);      
+      $record->getNode()->moveAsLastChildOf($dest);
+      
+      $answer = $this->createJsTreeAnswer(
+        true, 
+        array('id' => $record->getPrimaryKey())
+      );
+    } catch (Exception $e) {      
+      $answer = $this->createJsTreeAnswer(false);
+    }
+    
+    return $this->echoJSON($answer);
+  }
+  
+  /**
+   * Fetches the model tree with given $root_id
+   * @param string $model
+   * @param int $root_id
+   * @return Doctrine_Collection
+   */
+  protected function getTree($model, $root_id = null)
+  {
+    $tree = Doctrine_Core::getTable($model)->getTree();
+    $options = null !== $root_id ? array('root_id' => $root_id) : array();    
     return $tree->fetchTree($options);
   }
   
-  public function decorateNode(Doctrine_Record $model)
+  /**
+   * Decorates node for jsTree
+   * @param Doctrine_Record $model
+   * @return array
+   */
+  protected function decorateNode(Doctrine_Record $model)
   {
     $is_leaf = $model->getNode()->isLeaf();
-    $rel = $model->getLevel() == 0 ? 'drive' : ($is_leaf ? 'file' : 'folder');
+    $rel = !$model->getNode()->getLevel() ? 'drive' : 'folder';
     return array(
       'attr' => array(
         'id' => $model->getPrimaryKey(),
@@ -28,108 +184,31 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
       'state' => $is_leaf ? 'leaf' : 'closed'
     );
   }
-
-  public function executeGet_children()
+  
+  /**
+   * Creates and returns well-formed jsTree answer
+   * @param bool $status
+   * @param array $data
+   * @return array 
+   */
+  protected function createJsTreeAnswer($status=true, $data=array())
   {
-    $parent_id = $this->getRequestParameter('parent_id');
-    $model = $this->getRequestParameter('model');
-    
-    /* @var $record DbItem */
-    if ($parent_id != 0) {
-      $nodes = Doctrine_Core::getTable($model)->getTree()->fetchChildrenOf($parent_id);
-    } else {
-      $record = Doctrine_Core::getTable($model)->getTree()->fetchRoot();
-      $nodes = array($record);
-    }
-    $json = array();
-    foreach ($nodes as $node) {
-      $json[] = $this->decorateNode($node);
-    }
-    return $this->echoJSON(json_encode($json));
+    return array_merge(
+      array('status' => $status),
+      $data
+    );
   }
   
-  public function executeAdd_child()
-  {
-    $parent_id = $this->getRequestParameter('parent_id');
-    $model = $this->getRequestParameter('model');
-    
-    try {
-      $record = Doctrine_Core::getTable($model)->find($parent_id);
-      $child = new $model;
-      $child->set(
-        $this->getRequestParameter('field'),
-        $this->getRequestParameter('value')
-      );
-      $record->getNode()->addChild($child);
-      $child->save();
-
-      $this->json = json_encode(array('status' => 1, 'id' => $child->getPrimaryKey()));
-    } catch (Exception $e) {
-      $this->json = json_encode(array('status' => 0));
-    }
-    
-    return $this->echoJSON($this->json);
-  }
-  
-  public function executeAdd_root(sfWebRequest $request)
-  {
-    $model = $this->getRequestParameter('model');
-    $data = $this->getRequestParameter(strtolower($model));
-    $tree = $this->getTree($model);
-    
-    $root = new $model;
-    $root->synchronizeWithArray($data);
-		$root->save();
-    
-    $root->getNode()->makeRoot();    
-    $this->redirect($request->getReferer());
-  }
-
-  public function executeEdit_field()
-  {
-    $id = $this->getRequestParameter('id');
-    $model = $this->getRequestParameter('model');
-    $field = $this->getRequestParameter('field');
-    $value = $this->getRequestParameter('value');
-
-    $record = Doctrine_Core::getTable($model)->find($id);
-    $record->set($field, $value);
-    $record->save();
-
-    return $this->echoJSON(json_encode(array('status' => 1)));
-  }
-
-  public function executeDelete()
-  {
-    $id = $this->getRequestParameter('id');
-    $model = $this->getRequestParameter('model');
-    
-    $record = Doctrine_Core::getTable($model)->find($id);
-    $record->delete();
-    
-    return $this->echoJSON(array('status' => 1));
-  }
-
-  public function executeMove(sfWebRequest $request)
-  {
-    //var_dump($request->getRequestParameters());die;
-    $id = $this->getRequestParameter('id');
-    $target_id = $this->getRequestParameter('target_id');
-    $model = $this->getRequestParameter('model');
-    
-    $record = Doctrine_Core::getTable($model)->find($id);
-    $dest = Doctrine_Core::getTable($model)->find($target_id);
-    
-    $dest->getNode()->addChild($record);
-    $record->save();
-    
-    return $this->echoJSON(json_encode(array('status' => 1, 'id' => $record->getPrimaryKey())));
-  }
-  
-  function echoJSON($content)
+  /**
+   * Sets the template for JSON answer and encodes data to JSON
+   * @param mixed $data
+   * @return int
+   */
+  protected function echoJSON($data)
   {
     $this->getResponse()->setHttpHeader('Content-type', 'application/json');
-    $this->getResponse()->setContent($content);
-    return sfView::NONE;
+    $this->json = json_encode($data);
+    $this->setTemplate('json');
+    return sfView::SUCCESS;
   }
 }
