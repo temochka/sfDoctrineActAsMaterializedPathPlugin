@@ -198,7 +198,7 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
    * @param int $hydrationMode
    * @return Doctrine_Collection
    */
-  public function fetchChildrenOf($pk, $options, $hydrationMode = null)
+  public function fetchChildrenOf($pk, $options = array(), $hydrationMode = null)
   {
     return $this->getQuery()->where('parent_id=?', $pk)
       ->execute(array(), $hydrationMode);
