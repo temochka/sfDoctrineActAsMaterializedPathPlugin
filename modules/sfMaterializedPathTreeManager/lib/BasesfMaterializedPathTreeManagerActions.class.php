@@ -83,12 +83,13 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
       $root->getNode()->makeRoot();
       $this->getUser()->setFlash(
         'notice', 
-        sprintf('The root %s has successfully added.', (string)$root)
+        sprintf('The root has successfully added.')
       );
     } catch (Exception $e) {
+      echo $e; die;
       $this->getUser()->setFlash(
         'error', 
-        sprintf('Error while adding new root.', (string)$root)
+        sprintf('Error (%s: %s) while adding new root.', get_class($e), $e->getMessage())
       );
     }
     $this->redirect($request->getReferer());

@@ -9,7 +9,9 @@
         <img alt="" src="/sfDoctrineMaterializedPathPlugin/images/node-delete-next.png"/><?php echo __('Delete Node');?>
     </button>
 	</li>
+  <?php if ($hasManyRoots): ?>
   <li class="sf_admin_action_back_to_list">or <?php echo link_to(__('back to list'), $sf_context->getRouting()->getCurrentInternalUri()); ?></li>
+  <?php endif; ?>
 </ul>
 
 <script type="text/javascript">
