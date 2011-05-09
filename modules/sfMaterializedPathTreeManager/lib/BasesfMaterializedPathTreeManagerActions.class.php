@@ -174,7 +174,7 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
   protected function decorateNode(Doctrine_Record $model)
   {
     $is_leaf = $model->getNode()->isLeaf();
-    $rel = !$model->getNode()->getLevel() ? 'drive' : 'folder';
+    $rel = !$model->getNode()->getLevel() ? 'root' : 'node';
     return array(
       'attr' => array(
         'id' => $model->getPrimaryKey(),

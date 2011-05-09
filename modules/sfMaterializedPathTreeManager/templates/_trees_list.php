@@ -45,20 +45,14 @@ $(function () {
 				"max_children" : -2,
 				"valid_children" : [ "drive" ],
 				"types" : {
-					"default" : {
-						"valid_children" : "none",
-						"icon" : {
-							"image" : "/sfDoctrineMaterializedPathPlugin/images/file.png"
-						}
-					},
-					"folder" : {
-						"valid_children" : [ "default", "folder" ],
+					"node" : {
+						"valid_children" : [ "node" ],
 						"icon" : {
 							"image" : "/sfDoctrineMaterializedPathPlugin/images/folder.png"
 						}
 					},
-					"drive" : {
-						"valid_children" : [ "default", "folder" ],
+					"root" : {
+						"valid_children" : [ "node" ],
 						"icon" : {
 							"image" : "/sfDoctrineMaterializedPathPlugin/images/root.png"
 						},
