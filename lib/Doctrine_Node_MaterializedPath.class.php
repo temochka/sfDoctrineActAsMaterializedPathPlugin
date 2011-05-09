@@ -505,9 +505,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     
     $old_root_id = $this->record->get($this->_tree->getAttribute('rootColumnName'));
     
-    $this->record->set($this->_tree->getAttribute('rootColumnName'), $root_id);
+    $this->setRootValue($root_id);
     $this->setLevel(0);
     $this->record->setParentId(null);
+    
     $conn = $this->record->getTable()->getConnection();
     $conn->beginTransaction();
     try {
