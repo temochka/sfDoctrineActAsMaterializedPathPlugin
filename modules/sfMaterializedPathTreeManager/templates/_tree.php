@@ -98,6 +98,9 @@
               if(!r.status) {
                 data.inst.refresh();
               }
+              if (r.redirect) {
+                location.reload(true);
+              }
             }
           });
         });

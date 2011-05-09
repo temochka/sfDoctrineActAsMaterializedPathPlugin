@@ -130,9 +130,15 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
     $model = $request->getParameter('model');
     
     try {
-      $record = Doctrine_Core::getTable($model)->find($id);      
-      if ($record) $record->delete(); else throw new Exception;
-      $answer = $this->createJsTreeAnswer(true);
+      $table = Doctrine_Core::getTable($model);
+      $record = $table->find($id);      
+      if ($record) {
+        $redirect = !$table->getTree()->hasManyRoots() && $record->getNode()->isRoot();
+        $record->delete();
+      } else {
+        throw new Exception;
+      }
+      $answer = $this->createJsTreeAnswer(true, array('redirect' => $redirect));
     } catch (Exception $e) {
       $answer = $this->createJsTreeAnswer(false);
     }

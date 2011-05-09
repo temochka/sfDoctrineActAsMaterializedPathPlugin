@@ -25,7 +25,9 @@
           </td>
 					<td>
 						<ul class="sf_admin_td_actions">
-							<li class="sf_admin_action_edit"><?php echo link_to(__('Manage Tree') ,$sf_request->getParameter('module') . '/' . $sf_request->getParameter('action') . '?root_id=' . $root->id);?></li>
+							<li class="sf_admin_action_edit">
+                <?php echo link_to(__('Manage Tree'), sprintf("%s/%s?root=%s", $sf_request->getParameter('module'), $sf_request->getParameter('action'), $root->id)); ?>
+              </li>
 						</ul>
 					</td>
 				</tr>
