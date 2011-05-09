@@ -501,9 +501,13 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     if (!$this->record || !$this->record->exists()) {
       throw new Doctrine_Node_Exception('Only saved records can be maked tree\'s roots.');
     }
-    $root_id = null === $root_id ? $this->record->getPrimaryKey() : $root_id;
     
-    $old_root_id = $this->record->get($this->_tree->getAttribute('rootColumnName'));
+    $root_id = null === $root_id ? $this->record->getPrimaryKey() : $root_id;    
+    if ($this->_tree->hasManyRoots()) {
+      $old_root_id = $this->record->get($this->_tree->getAttribute('rootColumnName'));
+    } else {
+      $old_root_id = null;
+    }
     
     $this->setRootValue($root_id);
     $this->setLevel(0);
