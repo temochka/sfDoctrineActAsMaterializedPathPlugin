@@ -17,10 +17,15 @@
 			<tbody>
 				<?php foreach ($roots as $i => $root): $odd = fmod(++$i, 2) ? 'odd' : 'even' ?>
 				<tr class="sf_admin_row <?php echo $odd ?>">
-					<td class="sf_admin_text sf_admin_list_td_<?php echo $field ?>"><?php echo $root->$field ?></td>
+          <td class="sf_admin_text sf_admin_list_td_<?php echo $field ?>">
+            <?php 
+            $edit_route = sfConfig::get('app_sf_doctrine_materialized_path_plugin_edit_route', null);            
+            echo null === $edit_route ? $root->$field : link_to($root->$field, $edit_route, $root);
+            ?>
+          </td>
 					<td>
 						<ul class="sf_admin_td_actions">
-							<li class="sf_admin_action_edit"><?php echo link_to( __('Manage Tree') ,$sf_request->getParameter('module') . '/' . $sf_request->getParameter('action') . '?root_id=' . $root->id);?></li>
+							<li class="sf_admin_action_edit"><?php echo link_to(__('Manage Tree') ,$sf_request->getParameter('module') . '/' . $sf_request->getParameter('action') . '?root_id=' . $root->id);?></li>
 						</ul>
 					</td>
 				</tr>

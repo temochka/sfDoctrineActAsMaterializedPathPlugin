@@ -13,17 +13,20 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
    */
   public function executeGet_children(sfWebRequest $request)
   {
-    $this->forward404Unless($request->isXmlHttpRequest());
+    $this->forward404Unless(
+      $request->isXmlHttpRequest() && $request->hasParameter('model') &&
+      $request->hasParameter('parent_id')
+    );
     $parent_id = $request->getParameter('parent_id');
     $model = $request->getParameter('model');
-        
-    if ($parent_id != 0) {
+  
+    if (0 != $parent_id) {
       $nodes = Doctrine_Core::getTable($model)->getTree()
         ->fetchChildrenOf($parent_id);
-    } else {
-      /* @var $record Doctrine_Record */
-      $record = Doctrine_Core::getTable($model)->getTree()->fetchRoot();
-      $nodes = array($record);
+    } elseif ($request->hasParameter('root_id')) {
+      $root_id = $request->getParameter('root_id');
+      $record = Doctrine_Core::getTable($model)->getTree()->fetchRoot($root_id);
+      $nodes = $record ? array($record) : array();
     }
     $answer = array();
     foreach ($nodes as $node) {
@@ -72,11 +75,22 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
     $data = $request->getParameter(strtolower($model));
     $tree = $this->getTree($model);
     
-    $root = new $model;
-    $root->synchronizeWithArray($data);
-		$root->save();
-    
-    $root->getNode()->makeRoot();
+    try {
+      $root = new $model;
+      $root->synchronizeWithArray($data);
+      $root->save();
+
+      $root->getNode()->makeRoot();
+      $this->getUser()->setFlash(
+        'notice', 
+        sprintf('The root %s has successfully added.', (string)$root)
+      );
+    } catch (Exception $e) {
+      $this->getUser()->setFlash(
+        'error', 
+        sprintf('Error while adding new root.', (string)$root)
+      );
+    }
     $this->redirect($request->getReferer());
   }
 

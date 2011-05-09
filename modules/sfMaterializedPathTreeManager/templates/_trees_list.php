@@ -15,7 +15,7 @@ $(function () {
             "action" : function (n) {
             document.location.href='<?php echo sfInflector::tableize($model);?>/'+(n.attr ? n.attr("id").replace("node_", "") : 0)+'/edit';
             }
-          }        
+          }
         }
       },
 			"json_data" : { 
@@ -24,7 +24,8 @@ $(function () {
 					"data" : function (n) { 
 						return { 
 							"model" : "<?php echo $model; ?>", 
-							"parent_id" : n.attr ? n.attr("id").replace("node_","") : 0 
+							"parent_id" : n.attr ? n.attr("id").replace("node_","") : 0,
+              "root_id" : "<?php echo $root; ?>"
 						}; 
 					}
 				}
