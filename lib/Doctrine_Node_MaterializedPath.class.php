@@ -196,7 +196,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
       }
     } else {
       if (($c = count($this->getPathArray())) != $this->getLevel()) {
-        $this->setLevel(null);
+        $this->setLevel($c);
       } else return false;
     }
     return true;

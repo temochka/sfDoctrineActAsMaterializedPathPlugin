@@ -20,7 +20,8 @@ class BasesfMaterializedPathTreeManagerComponents extends sfComponents
     
     if ($this->hasManyRoots = $this->modelHasManyRoots()) {
       $this->roots = $this->getRoots();
-    } else {
+      $this->root = ($root = $table->getTree()->fetchRoot($this->root)) ? $root->getNode()->getRootValue() : null;
+    } else {      
       $this->root = ($root = $table->getTree()->fetchRoot()) ? $root->getPrimaryKey() : null;
     }
     
