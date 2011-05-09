@@ -188,7 +188,6 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
         $record->getNode()->getRootValue(), 
         $q
       )->execute(array(), $hydrationMode);
-    
   }
   
   /**

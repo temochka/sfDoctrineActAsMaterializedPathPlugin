@@ -17,14 +17,15 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
   
   public function decorateNode(Doctrine_Record $model)
   {
-    $rel = $model->getLevel() == 0 ? 'drive' : 'folder';
+    $is_leaf = $model->getNode()->isLeaf();
+    $rel = $model->getLevel() == 0 ? 'drive' : ($is_leaf ? 'file' : 'folder');
     return array(
       'attr' => array(
         'id' => $model->getPrimaryKey(),
         'rel' => $rel
       ),
       'data' => (string)$model,
-      'state' => $model->getChildren()->count() ? 'closed' : 'leaf'
+      'state' => $is_leaf ? 'leaf' : 'closed'
     );
   }
 
@@ -35,13 +36,7 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
     
     /* @var $record DbItem */
     if ($parent_id != 0) {
-      $nodes = Doctrine_Core::getTable($model)
-        ->createQuery('_nodes')
-        ->leftJoin('_nodes.Children _ch')
-        ->where(
-          '_nodes.parent_id=?', 
-          $parent_id
-        )->execute();
+      
     } else {
       $record = Doctrine_Core::getTable($model)->getTree()->fetchRoot();
       $nodes = array($record);
@@ -66,7 +61,6 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
         $this->getRequestParameter('value')
       );
       $record->getNode()->addChild($child);
-      $record->setIsContainer(false);
       $child->save();
 
       $this->json = json_encode(array('status' => 1, 'id' => $child->getPrimaryKey()));

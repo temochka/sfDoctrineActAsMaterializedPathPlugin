@@ -1,6 +1,4 @@
- <?php if( isset($records) && is_object($records) && count($records) > 0 ): ?>
-  <div id="<?php echo strtolower($model);?>-tree"></div>
-<?php endif;?>
+<div id="<?php echo strtolower($model);?>-tree"></div>
 <?php echo javascript_tag();?>
 $(function () {
 	// Settings up the tree - using $(selector).jstree(options);
@@ -18,7 +16,7 @@ $(function () {
           "edit" : {
             "label" : "<?php echo __('Edit '.$model); ?>",
             "action" : function (n) {
-              document.location.href='item/'+(n.attr ? n.attr("id").replace("node_", "") : 0)+'/edit';
+              document.location.href='<?php echo strtolower($model);?>/'+(n.attr ? n.attr("id").replace("node_", "") : 0)+'/edit';
             }
           }        
         }
@@ -74,7 +72,7 @@ $(function () {
 						"valid_children" : "none",
 						// If we specify an icon for the default type it WILL OVERRIDE the theme icons
 						"icon" : {
-							"image" : "/sfMaterializedPathTreeManagerPlugin/images/file.png"
+							"image" : "/sfDoctrineMaterializedPathPlugin/images/file.png"
 						}
 					},
 					// The `folder` type
@@ -82,7 +80,7 @@ $(function () {
 						// can have files and other folders inside of it, but NOT `drive` nodes
 						"valid_children" : [ "default", "folder" ],
 						"icon" : {
-							"image" : "/sfMaterializedPathTreeManagerPlugin/images/folder.png"
+							"image" : "/sfDoctrineMaterializedPathPlugin/images/folder.png"
 						}
 					},
 					// The `drive` nodes 
@@ -90,7 +88,7 @@ $(function () {
 						// can have files and folders inside, but NOT other `drive` nodes
 						"valid_children" : [ "default", "folder" ],
 						"icon" : {
-							"image" : "/sfMaterializedPathTreeManagerPlugin/images/root.png"
+							"image" : "/sfDoctrineMaterializedPathPlugin/images/root.png"
 						},
 						// those options prevent the functions with the same name to be used on the `drive` type nodes
 						// internally the `before` event is used
