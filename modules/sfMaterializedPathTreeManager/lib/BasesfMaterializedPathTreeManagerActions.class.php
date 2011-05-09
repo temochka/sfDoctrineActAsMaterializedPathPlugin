@@ -36,7 +36,7 @@ class BasesfMaterializedPathTreeManagerActions extends sfActions
     
     /* @var $record DbItem */
     if ($parent_id != 0) {
-      
+      $nodes = Doctrine_Core::getTable($model)->getTree()->fetchChildrenOf($parent_id);
     } else {
       $record = Doctrine_Core::getTable($model)->getTree()->fetchRoot();
       $nodes = array($record);
