@@ -45,8 +45,7 @@ $t->is($branch->count(), 2, 'There are one children on the first root\'s child\'
 // Adding new node on the level 1
 $node = new sfMaterializedPath_TestNodeSingle();
 $node->setName('new_node');
-$node->setParent($root);
-$node->save();
+$node->getNode()->insertAsLastChildOf($root);
 
 // Testing
 $t->is($node->getLevel(), 1, 'New node\'s level is 1.');

@@ -135,7 +135,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   public function getPathArray($includeNode = false)
   {
     $path = explode($this->getPathSeparator(), $this->record->getPath());
-    return array_slice($path, 0, count($path)-!(int)$includeNode);
+    return end($path) == $this->getId() ? array_slice($path, 0, count($path)-!(int)$includeNode) : $path;
   }
   
   /**
@@ -178,6 +178,8 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     if ($this->fixPath()) {
       $this->fixLevel();
       $this->record->save();
+    } elseif (!$this->hasValidParentId()) {
+      die('Here');
     }
   }
   
@@ -221,6 +223,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function isDescendantOf(Doctrine_Record $subj) {
     return in_array($subj->getPrimaryKey(), $this->getPathArray());
+  }
+  
+  public function getId() {
+    return $this->record->getPrimaryKey();
   }
   
   /**
@@ -444,6 +450,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   public function hasParent() {
     return null !== $this->record->getParentId();
   }  
+  
+  public function hasValidParentId() {
+    return $this->getParentId() == array_pop($this->getPathArray());
+  }
   
   /**
    * Checks if the node has previous sibling in horizontal sorted tree.
