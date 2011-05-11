@@ -54,10 +54,9 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     $conn->beginTransaction();
     try {
       $record->getNode()->setPath(
-        $this->getPath($this->getPathSeparator(), true).
-        ($record->getNode()->isValidNode() ? 
-        $this->getPathSeparator().
-        $record->getPrimaryKey() : ''),
+        $this->getPath(null, true).(
+          $record->getNode()->isValidNode() ? $this->getPathSeparator().$record->getPrimaryKey() : ''
+        ),
         $old_root_id
       );
       $record->save();
@@ -126,9 +125,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * @param bool $includeNode
    * @return string
    */
-  public function getPath($separator = Doctrine_Tree_MaterializedPath::PATH_SEPARATOR, $includeNode = false) {
-    $path = $this->getPathArray($includeNode);
-    return implode($separator, $path);
+  public function getPath($separator = null, $includeNode = false)
+  {
+    if (null === $separator) $separator = $this->getPathSeparator();
+    return implode($separator, $this->getPathArray($includeNode));
   }
   
   /**
@@ -194,6 +194,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     return $this->record->getLevel();
   }  
   
+  /**
+   * Method sets the record's level
+   * @param int $level 
+   */
   public function setLevel($level) {
     $this->record->setLevel($level);
   }
@@ -207,6 +211,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     return in_array($subj->getPrimaryKey(), $this->getPathArray());
   }
   
+  /**
+   * Method returns the record's ID
+   * @return int
+   */
   public function getId() {
     return $this->record->getPrimaryKey();
   }
@@ -220,7 +228,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   * Checks if node is valid
+   * Checks if the node is valid
    * Valid node is a node that exists and has valid path and level
    * @return bool
    */
@@ -326,7 +334,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * @return int
    */
   public function getNumberChildren() {
-    return $this->getChildren()->count();
+    return $this->getChildrenQuery()->count();
   }
   
   /**
@@ -393,8 +401,8 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * Throws Doctrine_Node_Exception. Call in methods hasn't be implemented yet.
    * @throws Doctrine_Node_Exception
    */
-  private function unsupportedMethod() {
-    throw new Doctrine_Node_Exception('Method is unsupported in MaterializedPath');
+  private function unsupportedMethod($msg = 'Method is unsupported in MaterializedPath') {
+    throw new Doctrine_Node_Exception($msg);
   }
   
   /**
@@ -414,12 +422,17 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     return (bool)$this->record->getChildren()->count();
   }
   
+  public function getChildrenQuery() {
+    return $this->_tree->getQueryWithRootId($this->getRootValue())
+      ->where('parent_id=?', $this->getId());
+  }
+  
   /**
    * Checks if the node has next sibling in horizontal sorted tree.
    * @return bool
    */
   public function hasNextSibling() {
-    if (($field = $this->_tree->getAttribute('sortBy')) === null) {
+    if (null === ($field = $this->_tree->getAttribute('sortBy'))) {
       $this->unsupportedMethod();
     }
     return $this->getNextSiblingsQuery()->count() > 0;
@@ -433,6 +446,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     return null !== $this->record->getParentId();
   }  
   
+  /**
+   * Checks that parent_id field's value and parent_id from path are match
+   * @return bool
+   */
   public function hasValidParentId() {
     return $this->getParentId() == array_pop($this->getPathArray());
   }
@@ -469,7 +486,8 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   * Method for listener
+   * The method is executed by Doctrine_MaterializedPath_Listener
+   * Method updates the path with the record's new ID and saves it
    */
   public function postInsertTrigger() {
     $path = $this->record->getPath();
@@ -482,7 +500,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   * Makes node a next sibling of $dest.
+   * Makes the node a next sibling of $dest.
    * If $dest is a tree's root, makes node tree's root too.
    * @param Doctrine_Record $dest 
    */
@@ -491,14 +509,12 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     if ($this->isValidNode()) {
       throw new Doctrine_Node_Exception('Can not insert existing nodes.');
     }
-    if (!$dest->getNode()->getLevel()) {
-      $this->makeRoot();
-    }
-    $dest->getParent()->getNode()->addChild($this->record);
+    if (!$dest->getNode()->getLevel()) $this->makeRoot();
+    else $this->insertAsLastChildOf($dest->getParent());
   }
   
   /**
-   * Makes node a new tree_root with $root_id
+   * Makes the node a new tree_root with $root_id
    * @param type $root_id 
    */
   public function makeRoot($root_id=null)
@@ -537,7 +553,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * @param Doctrine_Record $dest 
    */
   public function insertAsParentOf(Doctrine_Record $dest) {
-    throw new Doctrine_Node_Exception('Method is unsupported in Materialized Path');
+    $this->unsupportedMethod();
   }
   
   /**
@@ -583,7 +599,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   *
+   * Moves the record as $dest's child
    * @param Doctrine_Record $dest 
    */
   public function moveAsFirstChildOf(Doctrine_Record $dest)
@@ -595,7 +611,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   *
+   * Moves the record as $dest's child
    * @param Doctrine_Record $dest 
    */
   public function moveAsLastChildOf(Doctrine_Record $dest) {
@@ -603,7 +619,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   }
   
   /**
-   *
+   * Moves the record as $dest's sibling
    * @param Doctrine_Record $dest 
    */
   public function moveAsNextSiblingOf(Doctrine_Record $dest) {
@@ -654,14 +670,12 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   
   /**
    * Checks if the node has valid root value
+   * @todo What?
    * @return bool
    */
   public function hasValidRootValue()
   {
-    if ($this->_tree->hasManyRoots() && null === $this->getRootValue()) {
-      return false;
-    }
-    return true;
+    return !($this->_tree->hasManyRoots() && null === $this->getRootValue());
   }
   
   /**

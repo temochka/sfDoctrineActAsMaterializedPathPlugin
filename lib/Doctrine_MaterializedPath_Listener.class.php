@@ -81,7 +81,7 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
   }
   
   /**
-   *
+   * Trigger does magic updation of the record's path with its primary key
    * @param Doctrine_Event $event 
    */
   public function postInsert(Doctrine_Event $event) {
