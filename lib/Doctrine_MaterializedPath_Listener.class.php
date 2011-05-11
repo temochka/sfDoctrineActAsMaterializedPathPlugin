@@ -48,6 +48,19 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
   }
   
   /**
+   * Function sets unfixed node's path to its parent's path
+   * It saves one database call.
+   * @param Doctrine_Event $event 
+   */
+  public function preInsert(Doctrine_Event $event) {
+    /* @var $object sfDoctrineRecord */
+    $object = $event->getInvoker();
+    if (null !== $object->getParentId() && null === $object->getPath()) {
+      $object->setPath($object->getParent()->getPath());
+    }
+  }
+  
+  /**
    * Executes level fixes before saving the record
    * @param Doctrine_Event $event 
    */
@@ -58,13 +71,22 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
   }
 
   /**
-   * Executes path and level fixes after saving the record
+   *
    * @param Doctrine_Event $event 
    */
-  public function postSave(Doctrine_Event $event)
-  {
+  public function postUpdate(Doctrine_Event $event) {
     /** @var $object sfDoctrineRecord */
     $object = $event->getInvoker();
-    $object->getNode()->fixPathAndSave();
+    $object->getNode()->fixPath();
+  }
+  
+  /**
+   *
+   * @param Doctrine_Event $event 
+   */
+  public function postInsert(Doctrine_Event $event) {
+    /** @var $object sfDoctrineRecord */
+    $object = $event->getInvoker();    
+    $object->getNode()->postInsertTrigger();
   }
 }

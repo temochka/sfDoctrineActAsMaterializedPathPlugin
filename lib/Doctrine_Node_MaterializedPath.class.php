@@ -83,7 +83,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
       count(explode($this->getPathSeparator(), $full_old_path))
     );
     
-    if (!$this->record->isNew() && $this->hasChildren()) {      
+    if (!$this->record->isNew() && $this->hasChildren()) {
       /* @var $q Doctrine_Query */
       $q = $this->record->getTable()->createQuery()->update()
         ->set('path', 'CONCAT(?, ?, SUBSTRING(path, ?, (LENGTH(path)) - ?))',
@@ -113,6 +113,10 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
       $q->execute();
     }
     $this->record->setPath($new_path);
+    
+    // @todo It is overhead fixLevel call. Try to understand why it doesn't be 
+    // called from preSave
+    $this->fixLevel();
     if ($and_save) $this->record->save();
   }
   
@@ -134,7 +138,8 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function getPathArray($includeNode = false)
   {
-    $path = explode($this->getPathSeparator(), $this->record->getPath());
+    if (in_array($this->record->getPath(), array(null, ''))) return array();
+    $path = explode($this->getPathSeparator(), $this->record->getPath());    
     return end($path) == $this->getId() ? array_slice($path, 0, count($path)-!(int)$includeNode) : $path;
   }
   
@@ -145,41 +150,18 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function fixPath()
   {
-    if ($this->record->isNew()) return false;    
-    
-    $path_string = $this->record->getPath();    
-    
-    if ('' === $path_string || null === $path_string) {      
-      if ($this->hasParent())
-        $this->record->setPath(
-          $this->getParent()->getPath().
-          $this->getPathSeparator().
-          $this->record->getPrimaryKey()
-        );
-      else
-        $this->record->setPath($this->record->getPrimaryKey());
-    } else {
-      $path = $this->record->getNode()->getPathArray(true);      
-      if (array_pop($path) != $this->record->getPrimaryKey()) {
-        $this->record->setPath(
-          $this->record->getPath().$this->getPathSeparator().$this->record->getPrimaryKey()
-        );
-      } else return false;
-    }
-    
-    return true;
-  }
-  
-  /**
-   * Works like fixPath() but saves record on changes
-   */
-  public function fixPathAndSave()
-  {
-    if ($this->fixPath()) {
-      $this->fixLevel();
-      $this->record->save();
-    } elseif (!$this->hasValidParentId()) {
-      die('Here');
+    if ($this->record->isNew()) return;
+    $path = $this->getPathArray(true);
+    if (
+      array_pop($path) != $this->record->getPrimaryKey() || 
+      array_pop($path) != $this->getParentId()
+    )
+    {
+      if ($parent = $this->getParent()) {
+        $this->moveAsLastChildOf($parent);
+      } else {
+        $this->makeRoot();
+      }
     }
   }
   
@@ -190,8 +172,8 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function fixLevel()
   {
-    if (null === $this->getLevel()) {            
-      if (null === $this->getParentId()) {        
+    if (null === $this->getLevel()) {
+      if (null === $this->getParentId()) {
         $this->record->setLevel(0);
       } else {
         $this->record->setLevel($this->getParent()->getLevel() + 1);
@@ -484,6 +466,19 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function insertAsLastChildOf(Doctrine_Record $dest) {
     $this->insertAsFirstChildOf($dest);
+  }
+  
+  /**
+   * Method for listener
+   */
+  public function postInsertTrigger() {
+    $path = $this->record->getPath();
+    $this->record->setPath(null === $path || '' === $path ?
+      $this->getId() :
+      $path.$this->getPathSeparator().$this->getId()
+    );
+    $this->fixLevel();
+    $this->record->save();
   }
   
   /**

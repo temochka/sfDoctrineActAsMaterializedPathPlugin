@@ -168,7 +168,23 @@ $t->ok(!$root->getNode()->hasParent(), "The root hasn't parent");
 $t->ok($child->getNode()->hasParent(), "\$child has parent");
 
 // *****************************************************************************
-// Doctrine_Node_MaterializedPath::delete
+// Doctrine_Record::setParent
+$child->setParent($sibling);
+$child->save();
+
+$t->ok($child->getNode()->isValidNode(), "\$child is valid node.");
+$t->is($child->getNode()->getParentId(), $sibling->getPrimaryKey(), "\$child's parent is \$sibling");
+
+// *****************************************************************************
+// Doctrine_Record::link
+$root->link('Children', array($child->getPrimaryKey()));
+$root->save();
+
+$t->ok($child->getNode()->isValidNode(), "\$child is valid node.");
+$t->is($child->getNode()->getParentId(), $root->getPrimaryKey(), "\$child's parent is \$root");
+
+// *****************************************************************************
+// Doctrine_Record::delete
 try {
   $sibling->delete();
   $root->delete();
@@ -181,4 +197,3 @@ $t->ok(
   !sfMaterializedPath_TestNodeMultipleTable::getInstance()->find($child->getPrimaryKey()), 
   "The child should not exist in database after parent deletion."
 );
-

@@ -9,6 +9,7 @@ require __DIR__.'/../bootstrap/unit.php';
 new sfDatabaseManager($configuration);
 
 sfMaterializedPath_TestNodeSingleTable::getInstance()->createQuery()->delete();
+$t = new lime_test();
 
 Doctrine_Core::loadData($_data_dir.'/test_fixtures');
 
@@ -17,7 +18,6 @@ $table = sfMaterializedPath_TestNodeSingleTable::getInstance();
 /* @var $root sfMaterializedPath_TestNodeSingle */
 $root = $table->getTree()->fetchRoot();
 
-$t = new lime_test();
 $t->is($root->getLevel(), 0, 'Root node level must be equal to zero.');
 $t->is($root->getNode()->getLevel(), 0, 'Node level must be equal to record level.');
 
@@ -53,13 +53,31 @@ $t->is($node->getChildren()->count(), 0, 'New node hasn\'t children.');
 $t->is($node->getParentId(), $root->getPrimaryKey(), 'Node\'s parent is the root node.');
 
 // Moving root's child as node's child
-$child->getNode()->moveAsFirstChildOf($node);
+$child->setParent($node);
+$child->save();
 
 // Testing
+$t->ok($child->getNode()->isValidNode(), 'Still is valid node');
 $t->is($child->getParentId(), $node->getPrimaryKey(), 'New $child parent is $node.');
 $descendants = $child->getNode()->getDescendants();
-$t->is($descendants->count(), 3, 'Node still has 3 child nodes.');
+$t->is($descendants->count(), 3, 'Node still has 3 descendants.');
+$is_valid = true;
+foreach ($descendants as $descendant) {
+  $is_valid = $descendant->getNode()->isValidNode() && $descendant->getNode()->isDescendantOf($root);  
+}
 
+$t->ok($is_valid, 'All node descendants are valid nodes and they\'re all root node\'s descendants.');
+
+
+// Moving $child back to $root using Doctrine_Record::link
+$root->link('Children', array($child->getPrimaryKey()));
+$root->save();
+
+// Testing
+$t->ok($child->getNode()->isValidNode(), 'Still is valid node');
+$t->is($child->getParentId(), $root->getPrimaryKey(), 'New $child parent is $node.');
+$descendants = $child->getNode()->getDescendants();
+$t->is($descendants->count(), 3, 'Node still has 3 descendants.');
 $is_valid = true;
 foreach ($descendants as $descendant) {
   $is_valid = $descendant->getNode()->isValidNode() && $descendant->getNode()->isDescendantOf($root);  
@@ -69,6 +87,6 @@ $t->ok($is_valid, 'All node descendants are valid nodes and they\'re all root no
 
 // Deletion
 $descendant_id = $descendants->getFirst()->getPrimaryKey();
-$node->delete();
+$root->delete();
 
 $t->ok(!($table->find($descendant_id) instanceof sfDoctrineRecord), 'Children were deleted with theirs parent.');
