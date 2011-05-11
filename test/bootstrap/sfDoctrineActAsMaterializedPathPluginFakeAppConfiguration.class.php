@@ -4,7 +4,7 @@
  * @author Artem Chistyakov <chistyakov.artem@gmail.com>
  * Fake Application Configuration for testing needs.
  */
-class sfDoctrineMaterializedPathPluginFakeAppConfiguration extends sfApplicationConfiguration {
+class sfDoctrineActAsMaterializedPathPluginFakeAppConfiguration extends sfApplicationConfiguration {
   public function configure() {}
 }
 

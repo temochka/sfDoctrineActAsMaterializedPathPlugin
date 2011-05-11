@@ -12,20 +12,20 @@
  */
 function get_tree_manager($model, $field, $root = null) {
   sfContext::getInstance()->getResponse()->addStylesheet(
-    '/sfDoctrineMaterializedPathPlugin/jsTree/themes/default/style.css'
+    '/sfDoctrineActAsMaterializedPathPlugin/jsTree/themes/default/style.css'
   );
   sfContext::getInstance()->getResponse()->addStylesheet(
-    '/sfDoctrineMaterializedPathPlugin/css/screen.css'
+    '/sfDoctrineActAsMaterializedPathPlugin/css/screen.css'
   );
   
   sfContext::getInstance()->getResponse()->addJavascript(
-    '/sfDoctrineMaterializedPathPlugin/jsTree/jquery.cookie.js'
+    '/sfDoctrineActAsMaterializedPathPlugin/jsTree/jquery.cookie.js'
   );
   sfContext::getInstance()->getResponse()->addJavascript(
-    '/sfDoctrineMaterializedPathPlugin/jsTree/jquery.hotkeys.js'
+    '/sfDoctrineActAsMaterializedPathPlugin/jsTree/jquery.hotkeys.js'
   );
   sfContext::getInstance()->getResponse()->addJavascript(
-    '/sfDoctrineMaterializedPathPlugin/jsTree/jquery.jstree.js'
+    '/sfDoctrineActAsMaterializedPathPlugin/jsTree/jquery.jstree.js'
   );
 
   return get_component(

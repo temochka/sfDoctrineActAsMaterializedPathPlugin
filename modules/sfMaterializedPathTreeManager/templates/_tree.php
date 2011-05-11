@@ -50,13 +50,13 @@
             "node" : {
               "valid_children" : [ "node" ],
               "icon" : {
-                "image" : "/sfDoctrineMaterializedPathPlugin/images/folder.png"
+                "image" : "/sfDoctrineActAsMaterializedPathPlugin/images/folder.png"
               }
             },
             "root" : {
               "valid_children" : [ "node" ],
               "icon" : {
-                "image" : "/sfDoctrineMaterializedPathPlugin/images/root.png"
+                "image" : "/sfDoctrineActAsMaterializedPathPlugin/images/root.png"
               },
               "start_drag" : false,
               "move_node" : false,

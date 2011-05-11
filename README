@@ -1,4 +1,4 @@
-# sfDoctrineMaterializedPathPlugin #
+# sfDoctrineActAsMaterializedPathPlugin #
 
 ## Introduction ##
 This behavior allows you to store Materialized Path's trees in your database
@@ -16,7 +16,7 @@ This behavior allows you to store Materialized Path's trees in your database
  * Classical Materialized Path extended by "level" and "parent_id" fields to improve perfomance
  * Use only DQL. No raw SQL. (It causes light overhead by multiple save method calls)
  * Only new nodes can be inserted in the tree
- * Only existing tree nodes can be moved in tree
+ * Only existing tree nodes can be moved across the tree
 
 ## Known bugs ##
  * Dynamic setting Parent and Children by Doctrine relation is not currently supported. Use Doctrine_Node_Interface's methods instead. 
@@ -26,32 +26,38 @@ This behavior allows you to store Materialized Path's trees in your database
  * go to your project's root
  * Install the plugin (via a Git clone):
 
-    $ git clone git://github.com/temochka/sfDoctrineMaterializedPathPlugin.git plugins/sfDoctrineMaterializedPathPlugin
+        git clone git://github.com/temochka/sfDoctrineActAsMaterializedPathPlugin.git plugins/sfDoctrineActAsMaterializedPathPlugin
 
- * Or install the plugin (via package from [github](http://github.com/temochka "Github"))
+ * Or install the plugin (via package from [github](https://github.com/temochka/sfDoctrineActAsMaterializedPathPlugin "Github"))
 
  * Activate the plugin in the config/ProjectConfiguration.class.php
 
-    class ProjectConfiguration extends sfProjectConfiguration
-    {
-      public function setup()
-      {
-        $this->enablePlugins('sfDoctrinePlugin', 'sfDoctrineMaterializedPathPlugin');
-      }
-    }
+        [php]
+        class ProjectConfiguration extends sfProjectConfiguration
+        {
+          public function setup()
+          {
+            $this->enablePlugins(array(
+              'sfDoctrinePlugin', 
+              'sfDoctrineActAsMaterializedPathPlugin',
+              '...'
+            ));
+          }
+        }
 
  * edit config/doctrine/schema.yml and add the Materialized path behavior to the model you want to be taggable.
  
-    Post:
-      actAs:  { Timestampable: ~ , MaterializedPath: ~ }
+        [yml]
+        Post:
+          actAs:  { Timestampable: ~ , MaterializedPath: ~ }
  
  * rebuild the model: 
  
-    ./symfony doctrine:build --all
+        php symfony doctrine:build --all
  
  * clear cache:
  
-    ./symfony cc
+        php symfony cc
 
 ## Usage ##
 
@@ -86,4 +92,4 @@ You can set up a custom separator for MaterializedPath "path" string by using "p
           pathSeparator: '@'
       # ...
 
-Other examples will appear soon in [project wiki](https://github.com/temochka/sfDoctrineMaterializedPathPlugin/wiki).
+Other examples will appear soon in [project wiki](https://github.com/temochka/sfDoctrineActAsMaterializedPathPlugin/wiki).

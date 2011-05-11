@@ -4,7 +4,7 @@
     <label for="<?php echo strtolower($model);?>_<?php echo $field;?>"><?php echo ucfirst($field);?> : </label>
     <input type="text" id="<?php echo strtolower($model);?>_<?php echo $field;?>" value="" name="<?php echo strtolower($model);?>[<?php echo $field;?>]"/>    
     <button type="submit">
-      <img class="actionImage" src="/sfDoctrineMaterializedPathPlugin/images/node-insert-next.png"/><?php echo __('Create Root');?>
+      <img class="actionImage" src="/sfDoctrineActAsMaterializedPathPlugin/images/node-insert-next.png"/><?php echo __('Create Root');?>
     </button>
   </form>
 </div>

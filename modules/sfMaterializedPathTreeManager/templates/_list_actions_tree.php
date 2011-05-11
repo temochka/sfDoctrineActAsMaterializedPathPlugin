@@ -1,12 +1,12 @@
 <ul id="tree_menu_<?php echo strtolower($model); ?>" class="sf_admin_actions">
   <li class="sf_admin_action_insert_folder">
 		<button id="insert_node" class="button">
-        <img alt="" src="/sfDoctrineMaterializedPathPlugin/images/node-insert-next.png"/><?php echo __('Insert Node');?>
+        <img alt="" src="/sfDoctrineActAsMaterializedPathPlugin/images/node-insert-next.png"/><?php echo __('Insert Node');?>
     </button>
 	</li>
 	<li class="sf_admin_action_delete_node">
     <button id="delete_node" class="button">
-        <img alt="" src="/sfDoctrineMaterializedPathPlugin/images/node-delete-next.png"/><?php echo __('Delete Node');?>
+        <img alt="" src="/sfDoctrineActAsMaterializedPathPlugin/images/node-delete-next.png"/><?php echo __('Delete Node');?>
     </button>
 	</li>
   <?php if ($hasManyRoots): ?>
