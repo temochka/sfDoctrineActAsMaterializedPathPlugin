@@ -158,8 +158,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     )
     {
       if ($parent = $this->getParent()) {
-        $this->record->setPath($parent->getPath());
-        $this->postInsertTrigger();
+        $this->moveAsLastChildOf($parent);
       } else {
         $this->makeRoot();
       }
@@ -404,6 +403,14 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   private function unsupportedMethod($msg = 'Method is unsupported in MaterializedPath') {
     throw new Doctrine_Node_Exception($msg);
+  }
+
+  public function updatePath()
+  {
+    if ($parent = $this->record->getParent()) {
+      $this->record->setPath($parent->getPath());
+    }
+    $this->postInsertTrigger();
   }
   
   /**

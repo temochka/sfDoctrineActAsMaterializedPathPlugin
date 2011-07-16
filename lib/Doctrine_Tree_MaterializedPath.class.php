@@ -268,7 +268,7 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
    */
   private function _fixTreeRecursive($node)
   {
-    $node->getNode()->fixPath();
+    $node->getNode()->updatePath();
     foreach ($node->getChildren() as $child) {
       $this->_fixTreeRecursive($child);
     }
