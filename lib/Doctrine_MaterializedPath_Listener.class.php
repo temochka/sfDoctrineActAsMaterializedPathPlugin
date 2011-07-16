@@ -37,6 +37,12 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
   protected $_options = array();
 
   /**
+   *
+   * @var bool
+   */
+  private static $_isDisabled = false;
+
+  /**
    * __construct
    *
    * @param string $options
@@ -53,6 +59,7 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
    * @param Doctrine_Event $event 
    */
   public function preInsert(Doctrine_Event $event) {
+    if ($this->isDisabled()) return;
     /* @var $object sfDoctrineRecord */
     $object = $event->getInvoker();
     if (null !== $object->getParentId() && null === $object->getPath()) {
@@ -65,6 +72,7 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
    * @param Doctrine_Event $event 
    */
   public function preSave(Doctrine_Event $event) {
+    if ($this->isDisabled()) return;
     /* @var $object sfDoctrineRecord */
     $object = $event->getInvoker();
     $object->getNode()->fixLevel();
@@ -75,6 +83,7 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
    * @param Doctrine_Event $event 
    */
   public function postUpdate(Doctrine_Event $event) {
+    if ($this->isDisabled()) return;
     /** @var $object sfDoctrineRecord */
     $object = $event->getInvoker();
     $object->getNode()->fixPath();
@@ -85,8 +94,18 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
    * @param Doctrine_Event $event 
    */
   public function postInsert(Doctrine_Event $event) {
+    if ($this->isDisabled()) return;
     /** @var $object sfDoctrineRecord */
     $object = $event->getInvoker();    
     $object->getNode()->postInsertTrigger();
+  }
+
+  /**
+   * 
+   */
+  public static function isDisabled($bool=null)
+  {
+    if (null === $bool) return self::$_isDisabled;
+    self::$_isDisabled = $bool;
   }
 }

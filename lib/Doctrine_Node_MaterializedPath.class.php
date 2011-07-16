@@ -158,7 +158,8 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     )
     {
       if ($parent = $this->getParent()) {
-        $this->moveAsLastChildOf($parent);
+        $this->record->setPath($parent->getPath());
+        $this->postInsertTrigger();
       } else {
         $this->makeRoot();
       }

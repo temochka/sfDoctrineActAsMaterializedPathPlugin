@@ -90,6 +90,8 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
         (string)$options['sortBy']
       ));
     }
+    $dispatcher = sfProjectConfiguration::getActive()->getEventDispatcher();
+    $dispatcher->connect('command.post_command', array($this, 'listenToCommandPostCommandEvent'));
   }  
   
   /**
@@ -236,7 +238,42 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
     return $this->getQueryWithRootId($root_id)
       ->where('level <= ?', $depth)->execute(array(), $hydrationMode);
   }
-  
+
+  /**
+   * Fixes the tree nodes pathes
+   * @param int $root_id
+   */
+  public function fixTree($root_id=1)
+  {
+    $root = $this->fetchRoot($root_id);
+    if (!$root || !$root->exists()) {
+      throw new Doctrine_Tree_Exception('Given root does not exist');
+    }
+    $this->_fixTreeRecursive($root);
+  }
+
+  /**
+   * All records fix
+   */
+  public function fixAll()
+  {
+    foreach ($this->fetchRoots() as $root) {
+      $this->_fixTreeRecursive($root);
+    }
+  }
+
+  /**
+   * Recursive tree fix
+   * @param Doctrine_Record $node
+   */
+  private function _fixTreeRecursive($node)
+  {
+    $node->getNode()->fixPath();
+    foreach ($node->getChildren() as $child) {
+      $this->_fixTreeRecursive($child);
+    }
+  }
+
   /**
    * Expands query with root_id control
    * @param int $root_id
@@ -299,5 +336,18 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
       $order_by[] = $field_name.' '.$this->getAttribute('sortOrder');
     }
     return implode(',', $order_by);
+  }
+
+  /**
+   *
+   * @param sfEvent $event
+   */
+  public function listenToCommandPostCommandEvent(sfEvent $event)
+  {
+    $invoker = $event->getSubject();
+    if ($invoker instanceof sfDoctrineDataLoadTask)
+    {
+      $this->fixAll();
+    }
   }
 }
