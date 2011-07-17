@@ -138,17 +138,19 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    */
   public function getPathArray($includeNode = false)
   {
-    if (in_array($this->record->getPath(), array(null, ''))) return array();
+    if (in_array($this->record->getPath(), array(null, ''))) 
+        return array();
     $path = explode($this->getPathSeparator(), $this->record->getPath());    
-    return end($path) == $this->getId() ? array_slice($path, 0, count($path)-!(int)$includeNode) : $path;
+    return end($path) == $this->getId() ? 
+        array_slice($path, 0, count($path) - !(int)$includeNode) : $path;
   }
   
   /**
-   * Function fixes the materialized path string
+   * Function fixes the node's path and takes care about children
    * Returns true when changes were
    * @return bool
    */
-  public function fixPath()
+  public function fixNode()
   {
     if ($this->record->isNew()) return;
     $path = $this->getPathArray(true);
