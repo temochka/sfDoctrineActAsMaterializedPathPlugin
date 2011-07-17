@@ -20,16 +20,16 @@
 
 /**
  * Doctrine_Node_MaterializedPath
- * @package doctrine
- * @subpackage sfDoctrineMaterializedPlugin
+ * @package     doctrine
+ * @subpackage  sfDoctrineMaterializedPlugin
  * @license     http://www.opensource.org/licenses/lgpl-license.php LGPL
- * @author Artem Chistyakov <chistyakov.artem@gmail.com>
+ * @author      Artem Chistyakov <chistyakov.artem@gmail.com>
  * 
- * @property sfDoctrineRecord $record
- * @property Doctrine_Tree_MaterializedPath $_tree
+ * @property    sfDoctrineRecord $record
+ * @property    Doctrine_Tree_MaterializedPath $_tree
  */
-class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_Node_Interface {
-    
+class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_Node_Interface
+{    
   /**
    * Method sets $record parent to this node and takes care about path updation
    * @param DbItem $record 
@@ -164,6 +164,17 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
       } else {
         $this->makeRoot();
       }
+    }
+  }
+  
+  /**
+   * Fixes node and its children recursively
+   */
+  public function fixNodeRecursive()
+  {
+    $this->updatePath();
+    foreach ($this->getChildren() as $child) {
+      $child->getNode()->fixNodeRecursive();
     }
   }
   
@@ -412,7 +423,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     if ($parent = $this->record->getParent()) {
       $this->record->setPath($parent->getPath());
     }
-    $this->postInsertTrigger();
+    $this->updatePathWithPrimaryKey();
   }
   
   /**
@@ -499,7 +510,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * The method is executed by Doctrine_MaterializedPath_Listener
    * Method updates the path with the record's new ID and saves it
    */
-  public function postInsertTrigger() {
+  public function updatePathWithPrimaryKey() {
     $path = $this->record->getPath();
     $this->record->setPath(null === $path || '' === $path ?
       $this->getId() :

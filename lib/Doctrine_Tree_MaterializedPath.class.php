@@ -249,7 +249,7 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
     if (!$root || !$root->exists()) {
       throw new Doctrine_Tree_Exception('Given root does not exist');
     }
-    $this->_fixTreeRecursive($root);
+    $root->getNode()->fixNodeRecursive();
   }
 
   /**
@@ -258,19 +258,7 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
   public function fixAll()
   {
     foreach ($this->fetchRoots() as $root) {
-      $this->_fixTreeRecursive($root);
-    }
-  }
-
-  /**
-   * Recursive tree fix
-   * @param Doctrine_Record $node
-   */
-  private function _fixTreeRecursive($node)
-  {
-    $node->getNode()->updatePath();
-    foreach ($node->getChildren() as $child) {
-      $this->_fixTreeRecursive($child);
+      $root->getNode()->fixNodeRecursive();
     }
   }
 

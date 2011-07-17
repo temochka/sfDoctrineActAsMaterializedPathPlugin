@@ -97,7 +97,7 @@ class Doctrine_MaterializedPath_Listener extends Doctrine_Record_Listener
     if ($this->isDisabled()) return;
     /** @var $object sfDoctrineRecord */
     $object = $event->getInvoker();    
-    $object->getNode()->postInsertTrigger();
+    $object->getNode()->updatePathWithPrimaryKey();
   }
 
   /**
