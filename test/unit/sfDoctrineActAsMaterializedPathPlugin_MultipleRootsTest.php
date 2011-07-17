@@ -9,7 +9,7 @@ require __DIR__.'/../bootstrap/unit.php';
 $manager = new sfDatabaseManager($configuration);
 
 sfMaterializedPath_TestNodeMultipleTable::getInstance()->createQuery()->delete();
-Doctrine_Core::loadData($_data_dir.'/test_fixtures');
+dataLoad($_data_dir.'/test_fixtures');
 
 $table = sfMaterializedPath_TestNodeMultipleTable::getInstance();
 

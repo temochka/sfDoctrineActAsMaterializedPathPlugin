@@ -220,7 +220,7 @@ class Doctrine_Tree_MaterializedPath extends Doctrine_Tree implements Doctrine_T
    */
   public function fetchRoots() {
     return $this->table
-      ->createQuery()->where('level=0')
+      ->createQuery()->where('parent_id IS NULL')
       ->orderBy($this->getOrderBy())->execute();
   }
   

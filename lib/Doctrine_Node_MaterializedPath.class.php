@@ -510,14 +510,14 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
    * The method is executed by Doctrine_MaterializedPath_Listener
    * Method updates the path with the record's new ID and saves it
    */
-  public function updatePathWithPrimaryKey() {
+  public function updatePathWithPrimaryKey($and_save = true) {
     $path = $this->record->getPath();
     $this->record->setPath(null === $path || '' === $path ?
       $this->getId() :
       $path.$this->getPathSeparator().$this->getId()
     );
     $this->fixLevel();
-    $this->record->save();
+    if ($and_save) $this->record->save();
   }
   
   /**

@@ -8,9 +8,39 @@
  * file that was distributed with this source code.
  */
 
+// globals
 $_test_dir = realpath(__DIR__.'/..');
 $_project_dir = realpath(__DIR__.'/../../../..');
 $_data_dir = realpath(__DIR__.'/../../data');
+
+// helpers
+// NOTE: Doctrine_Core::dataLoad is deprecated because it doesn't send events on
+// begin and end of processing
+/**
+ * Run DataLoad task
+ * @param string $filename 
+ */
+function dataLoad($filename) {
+  $task = new sfDoctrineDataLoadTask(
+    sfProjectConfiguration::getActive()->getEventDispatcher(),
+    new sfFormatter()
+  );
+  
+  $task->run($filename);
+}
+
+/**
+ * Run DataDump task
+ * @param type $filename 
+ */
+function dataDump($filename) {
+  $task = new sfDoctrineDataDumpTask(
+    sfProjectConfiguration::getActive()->getEventDispatcher(),
+    new sfFormatter()
+  );
+  
+  $task->run($filename);
+}
 
 // configuration
 require_once $_project_dir.'/config/ProjectConfiguration.class.php';

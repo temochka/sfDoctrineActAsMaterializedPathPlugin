@@ -5,13 +5,10 @@
  * @copyright © Artem Chistyakov, 2011
  */
 require __DIR__.'/../bootstrap/unit.php';
-
 new sfDatabaseManager($configuration);
-
-sfMaterializedPath_TestNodeSingleTable::getInstance()->createQuery()->delete();
 $t = new lime_test();
 
-Doctrine_Core::loadData($_data_dir.'/test_fixtures');
+dataLoad($_data_dir.'/test_fixtures');
 
 $table = sfMaterializedPath_TestNodeSingleTable::getInstance();
 
