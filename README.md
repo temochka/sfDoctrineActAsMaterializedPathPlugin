@@ -13,6 +13,7 @@ managing your trees.
  * customizable root_id column's name and path separator string
  * "dead nodes" protection with native database constraints
  * all tree and node logic are partially unit-tested
+ * NEW! Fully working data-dump and data-load tasks!
 
 ## Philosophy ##
 
