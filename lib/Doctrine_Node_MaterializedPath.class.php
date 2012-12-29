@@ -541,10 +541,12 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
   public function makeRoot($root_id=null)
   {
     if (!$this->record || !$this->record->exists()) {
-      throw new Doctrine_Node_Exception('Only saved records can be maked tree\'s roots.');
+      throw new Doctrine_Node_Exception(
+        'Only a saved record can be turned into tree root.'
+      );
     }
     
-    $root_id = null === $root_id ? $this->record->getPrimaryKey() : $root_id;    
+    $root_id = null === $root_id ? $this->record->getPrimaryKey() : $root_id;
     if ($this->_tree->hasManyRoots()) {
       $old_root_id = $this->record->get($this->_tree->getAttribute('rootColumnName'));
     } else {
@@ -554,6 +556,7 @@ class Doctrine_Node_MaterializedPath extends Doctrine_Node implements Doctrine_N
     $this->setRootValue($root_id);
     $this->setLevel(0);
     $this->record->setParentId(null);
+    $this->record->setParent(null);
     
     $conn = $this->record->getTable()->getConnection();
     $conn->beginTransaction();
