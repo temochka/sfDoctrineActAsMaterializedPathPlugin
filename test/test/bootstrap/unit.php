@@ -10,7 +10,7 @@
 
 // globals
 $_test_dir = realpath(__DIR__.'/..');
-$_project_dir = realpath(__DIR__.'/../../../..');
+$_project_dir = realpath(__DIR__.'/../..');
 $_data_dir = realpath(__DIR__.'/../../data');
 
 // helpers

@@ -1,0 +1,4 @@
+CREATE TABLE sf_materialized_path__test_node_multiple (id BIGINT AUTO_INCREMENT, name VARCHAR(63) NOT NULL, root_id BIGINT, path VARCHAR(255), level SMALLINT, parent_id BIGINT, INDEX parent_id_idx (parent_id), PRIMARY KEY(id)) ENGINE = INNODB;
+CREATE TABLE sf_materialized_path__test_node_single (id BIGINT AUTO_INCREMENT, name VARCHAR(63) NOT NULL, path VARCHAR(255), level SMALLINT, parent_id BIGINT, INDEX parent_id_idx (parent_id), PRIMARY KEY(id)) ENGINE = INNODB;
+ALTER TABLE sf_materialized_path__test_node_multiple ADD CONSTRAINT spsi FOREIGN KEY (parent_id) REFERENCES sf_materialized_path__test_node_multiple(id) ON DELETE CASCADE;
+ALTER TABLE sf_materialized_path__test_node_single ADD CONSTRAINT spsi_1 FOREIGN KEY (parent_id) REFERENCES sf_materialized_path__test_node_single(id) ON DELETE CASCADE;
